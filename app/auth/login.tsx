@@ -1,29 +1,62 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { useUser } from '../../context/UserContext';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme, themeColors } from '../../context/ThemeContext';
+import { supabase } from '../../lib/supabase';
 
 export default function Login() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const { theme } = useTheme();
+  const colors = themeColors[theme];
+  const { signIn } = useAuth();
+  const { setUserProfile } = useUser();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!username || !password) {
+  const handleLogin = async () => {
+    if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     try {
-      // Here you would typically make an API call to verify credentials
-      // For now, we'll simulate a successful login
-      console.log('Logging in with:', { username, password });
+      setLoading(true);
       
-      // Navigate to the main app
-      router.replace('/(tabs)');
+      // Sign in using Supabase auth
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) throw signInError;
+
+      if (data.user) {
+        // Fetch user profile
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+        } else if (profile) {
+          setUserProfile(profile);
+        }
+      }
+
+      // AuthContext will handle navigation
     } catch (error) {
-      Alert.alert('Error', 'Failed to login. Please check your credentials.');
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during login';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,12 +80,12 @@ export default function Login() {
             <View style={styles.form}>
               <TextInput
                 style={styles.input}
-                placeholder="Email or username"
-                placeholderTextColor="#a0a0a0"
-                value={username}
-                onChangeText={setUsername}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
                 autoCapitalize="none"
-                autoComplete="email"
+                keyboardType="email-address"
+                editable={!loading}
               />
               <TextInput
                 style={styles.input}
@@ -68,24 +101,57 @@ export default function Login() {
                 style={styles.loginButton}
                 onPress={handleLogin}
                 activeOpacity={0.8}
+                disabled={loading}
               >
                 <LinearGradient
                   colors={['#4CAF50', '#45a049']}
-                  style={styles.buttonGradient}
+                  style={[styles.buttonGradient, loading && styles.buttonDisabled]}
                 >
-                  <Text style={styles.loginButtonText}>Sign In</Text>
+                  {loading ? (
+                    <ActivityIndicator color="#ffffff" size="small" />
+                  ) : (
+                    <Text style={styles.loginButtonText}>Sign In</Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </View>
             
-            <TouchableOpacity 
-              onPress={() => router.push('/auth/signup')}
-              style={styles.signupLink}
-            >
-              <Text style={styles.signupText}>
-                Don't have an account? <Text style={styles.signupTextBold}>Sign up</Text>
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.linkContainer}>
+              <TouchableOpacity 
+                onPress={() => router.push('/auth/signup')}
+                style={styles.signupLink}
+              >
+                <Text style={styles.signupText}>
+                  Don't have an account? <Text style={styles.signupTextBold}>Sign up</Text>
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={async () => {
+                  if (!email) {
+                    Alert.alert('Error', 'Please enter your email address');
+                    return;
+                  }
+                  try {
+                    setLoading(true);
+                    await supabase.auth.resend({
+                      type: 'signup',
+                      email: email,
+                    });
+                    Alert.alert('Success', 'Verification email has been resent');
+                  } catch (error: any) {
+                    Alert.alert('Error', error?.message || 'Failed to resend verification email');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                style={styles.verifyLink}
+              >
+                <Text style={styles.verifyText}>
+                  Need verification email? <Text style={styles.verifyTextBold}>Resend</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </LinearGradient>
@@ -94,6 +160,9 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
   },
@@ -196,4 +265,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Poppins-SemiBold',
   },
-}); 
+  linkContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    gap: 12,
+  },
+  verifyLink: {
+    alignItems: 'center',
+  },
+  verifyText: {
+    color: '#666666',
+    fontSize: 13,
+    fontFamily: 'Poppins-Regular',
+  },
+  verifyTextBold: {
+    color: '#3498db',
+    fontWeight: '600',
+    fontFamily: 'Poppins-SemiBold',
+  },
+});

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -7,6 +7,7 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f0f7f4" />
       <LinearGradient
         colors={['#f0f7f4', '#e3f0e8', '#d6e9dc']}
         style={styles.gradient}
@@ -16,7 +17,7 @@ export default function LandingPage() {
           <Text style={styles.subtitle}>Connect, Collaborate, Create</Text>
           <TouchableOpacity 
             style={styles.button}
-            onPress={() => router.push('/auth/signup')}
+            onPress={() => router.push('/auth/login')}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Get Started</Text>
@@ -49,7 +50,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(255, 255, 255, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
-    fontFamily: 'Poppins-Bold',
   },
   subtitle: {
     fontSize: 18,
@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     textAlign: 'center',
     opacity: 0.9,
-    fontFamily: 'Poppins-Regular',
   },
   button: {
     backgroundColor: '#2ecc71',
@@ -75,6 +74,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     letterSpacing: 1,
-    fontFamily: 'Poppins-SemiBold',
   },
 });

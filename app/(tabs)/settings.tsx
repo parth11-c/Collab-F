@@ -1,20 +1,26 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useState } from 'react';
 import { useTheme, themeColors } from '../../context/ThemeContext';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsScreen() {
   const { theme, toggleTheme, isDarkMode } = useTheme();
   const colors = themeColors[theme];
+  const { signOut } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
   const router = useRouter();
 
-  const handleSignOut = () => {
-    // Here you would typically clear any user session data
-    router.replace('/auth/login');
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      // Navigation will be handled by AuthContext
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+    }
   };
 
   const SettingItem = ({ icon, title, rightComponent, onPress }: { icon: string, title: string, rightComponent?: React.ReactNode, onPress?: () => void }) => (
@@ -101,8 +107,8 @@ export default function SettingsScreen() {
             <SettingItem
               icon="log-out-outline"
               title="Sign Out"
-              rightComponent={<Ionicons name="chevron-forward" size={24} color={colors.secondaryText} />}
               onPress={handleSignOut}
+              rightComponent={<Ionicons name="chevron-forward" size={24} color={colors.secondaryText} />}
             />
           </BlurView>
         </View>

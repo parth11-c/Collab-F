@@ -123,10 +123,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="notification"
+        name="profile"
         options={{
-          title: 'Notification',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => <FontAwesome name="bell" size={size} color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => <FontAwesome name="user" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -137,10 +137,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="notification"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => <FontAwesome name="user" size={size} color={color} />,
+          title: 'Notification',
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => <FontAwesome name="bell" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

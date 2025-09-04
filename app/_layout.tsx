@@ -6,6 +6,8 @@ import { View } from 'react-native';
 import { ThemeProvider } from '../context/ThemeContext';
 import { ProjectProvider } from '../context/ProjectContext';
 import { NotificationProvider } from '../context/NotificationContext';
+import { UserProvider } from '../context/UserContext';
+import { AuthProvider } from '../context/AuthContext';
 import {
   Poppins_400Regular,
   Poppins_500Medium,
@@ -34,18 +36,54 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <ProjectProvider>
-        <NotificationProvider>
-          <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-              }}
-            />
-          </View>
-        </NotificationProvider>
-      </ProjectProvider>
-    </ThemeProvider>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <ThemeProvider>
+        <AuthProvider>
+            <NotificationProvider>
+            <UserProvider>
+              <ProjectProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'slide_from_right'
+                }}
+              >
+                <Stack.Screen
+                  name="index"
+                  options={{
+                    headerShown: false,
+                    animation: 'fade'
+                  }}
+                />
+                <Stack.Screen
+                  name="(auth)"
+                  options={{
+                    headerShown: false,
+                    animation: 'slide_from_right',
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{
+                    headerShown: false,
+                    animation: 'fade',
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="project/[id]"
+                  options={{
+                    headerShown: false,
+                    animation: 'slide_from_right'
+                  }}
+                />
+              </Stack>
+              </ProjectProvider>
+            </UserProvider>
+            </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </View>
   );
 }
