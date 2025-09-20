@@ -209,10 +209,6 @@ Expo will provide a QR code and options to launch on devices/simulators.
 
 ---
 
-## License
-Specify a license (e.g., MIT) for open-source distribution.
-
-
 Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
